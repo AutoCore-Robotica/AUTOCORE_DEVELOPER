@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AutoCore Developer - Calibrador de Seguidor de Linha</title>
+  
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ======== CONFIGURAÇÕES GLOBAIS ======== */
+    :root {
+      --color-bg: #0a0a1a;
+      --color-bg-secondary: #1a1a2e;
+      --color-primary: #8a2be2;
+      --color-secondary: #00e5ff;
+      --color-tertiary: #4a00e0;
+      --color-text: #e0e0e0;
+      --color-text-dark: #333;
+      --font-main: 'Poppins', sans-serif;
+      --gradient-primary: linear-gradient(90deg, var(--color-primary), var(--color-secondary));
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-main);
+      background-color: var(--color-bg);
+      color: var(--color-text);
+      overflow-x: hidden;
+    }
+
+    .container { max-width: 1100px; margin: 0 auto; padding: 0 20px; }
+
+    h1, h2, h3 { font-weight: 600; line-height: 1.2; }
+    h1 { font-size: 3.5rem; margin-bottom: 1rem; color: #fff; }
+    h2 { font-size: 2.5rem; margin-bottom: 2rem; text-align: center; }
+    p { font-size: 1.1rem; font-weight: 300; line-height: 1.6; margin-bottom: 1.5rem; }
+    a { text-decoration: none; color: var(--color-secondary); transition: color 0.3s ease; }
+    a:hover { color: var(--color-primary); }
+
+    .section { padding: 6rem 0; }
+    .gradient-text {
+      background: var(--gradient-primary);
+      -webkit-background-clip: text;
+      background-clip: text; 
+      -webkit-text-fill-color: transparent;
+    }
+
+    /* ======== NAVBAR ======== */
+    .navbar {
+      width: 100%; padding: 1.5rem 0; position: fixed; top: 0; left: 0;
+      z-index: 1000;
+      background: rgba(10,10,26,0.8);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(255,255,255,0.1);
+      transition: background 0.3s ease;
+    }
+    .navbar.scrolled { background: var(--color-bg); box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+    .navbar .container { display: flex; justify-content: space-between; align-items: center; }
+    .logo-image {
+      height: 40px; 
+      width: auto;
+    }
+    .navbar nav a { color: var(--color-text); font-weight: 400; margin-left: 2rem; }
+    .navbar nav a.btn-nav-download {
+      background: var(--gradient-primary); color: #fff;
+      padding: 0.5rem 1rem; border-radius: 20px; font-weight: 600;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .navbar nav a.btn-nav-download:hover {
+      transform: scale(1.05); box-shadow: 0 0 15px rgba(138,43,226,0.5);
+    }
+
+    /* ======== HERO ======== */
+    .hero {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center; text-align: center;
+      position: relative; padding-top: 80px; overflow: hidden;
+    }
+    .hero-content { position: relative; z-index: 10; }
+    .hero p { font-size: 1.3rem; color: rgba(255,255,255,0.9); max-width: 600px; margin: 0 auto 2.5rem auto; font-weight: 400; }
+
+    .btn-cta {
+      background: #fff; color: var(--color-tertiary);
+      font-size: 1.3rem; font-weight: 700;
+      padding: 1.2rem 3rem; border-radius: 50px;
+      display: inline-flex; align-items: center; gap: 0.7rem;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    }
+    .btn-cta:hover { transform: translateY(-5px) scale(1.03); box-shadow: 0 15px 35px rgba(0,0,0,0.3); }
+    .btn-cta svg { width: 24px; height: 24px; transition: transform 0.3s ease; }
+    .btn-cta:hover svg { transform: translateX(5px); }
+
+    /* ======== CANVAS FUNDO NEURAL ======== */
+    #neural-bg {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+      background: #0d0d0d;
+    }
+
+    /* ======== RESTANTE ======== */
+    .features-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px,1fr)); gap: 2rem; }
+    .feature-card {
+      background-color: var(--color-bg-secondary);
+      padding: 2.5rem; border-radius: 15px;
+      border: 1px solid rgba(255,255,255,0.1);
+      transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
+      position: relative; overflow: hidden;
+    }
+    .feature-card:hover { transform: translateY(-10px); border-color: var(--color-primary); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .feature-card h3 { color: #fff; font-size: 1.5rem; margin-bottom: 0.5rem; }
+    .feature-card p { font-size: 1rem; margin-bottom: 0; }
+    
+    .card-icon {
+      width: 60px;
+      height: 60px;
+      margin-bottom: 1.5rem;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .card-icon svg {
+      width: 36px;
+      height: 36px;
+      stroke: #fff;
+      stroke-width: 1.5;
+    }
+    .icon-1 { background: linear-gradient(45deg,#ff007f,#8a2be2); }
+    .icon-2 { background: linear-gradient(45deg,#00e5ff,#008cff); }
+    .icon-3 { background: linear-gradient(45deg,#00ff88,#00b894); }
+
+    .section-aiot { background-color: var(--color-bg-secondary); }
+    .aiot-layout { display: flex; align-items: center; gap: 3rem; }
+    .aiot-text { flex: 1; }
+    .aiot-text h2 { text-align: left; }
+    .text-left { text-align: left; }
+    .btn-secondary {
+      background: transparent; border: 2px solid var(--color-secondary);
+      color: var(--color-secondary); padding: 0.8rem 2rem;
+      border-radius: 50px; font-weight: 600; transition: all 0.3s ease;
+    }
+    .btn-secondary:hover { background: var(--color-secondary); color: var(--color-text-dark); box-shadow: 0 0 20px rgba(0,229,255,0.4); }
+
+    .aiot-visual { flex: 1; }
+    .app-screenshot {
+      width: 100%;
+      height: auto;
+      border-radius: 15px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+      display: block;
+      transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .app-screenshot:hover {
+      transform: translateY(-10px) scale(1.03);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.6);
+    }
+
+    .footer { background-color: transparent; padding: 2rem 0; border-top: 1px solid rgba(255,255,255,0.1); margin-top: 4rem; }
+    .footer .container {
+      display: flex;
+      flex-direction: column; 
+      justify-content: center;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .footer p { font-size: 0.9rem; color: rgba(255,255,255,0.5); margin: 0; }
+
+    @media (max-width: 768px) {
+      h1 { font-size: 2.8rem; }
+      h2 { font-size: 2rem; }
+      .navbar nav { display: none; }
+      .aiot-layout { flex-direction: column; }
+      .footer .container { flex-direction: column; gap: 1rem; }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="neural-bg"></canvas>
+
+  <header class="navbar">
+    <div class="container">
+      <a href="#">
+        <img src="https://raw.githubusercontent.com/AutoCore-Robotica/AUTOCORE_DEVELOPER/refs/heads/main/img/autocore.png" alt="Logo da AutoCore" class="logo-image">
+      </a>
+      <nav>
+        <a href="#features">Recursos</a>
+        <a href="#aiot">Como Funciona</a>
+        <a href="https://zenodo.org/records/16910725/files/AutoCore_Developer-v1.0.0.exe?download=1" target="_blank" class="btn-nav-download">Download App</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="hero">
+    <div class="container hero-content">
+      <h1>Calibre seu Robô <span class="gradient-text">Seguidor de Linha</span> em Minutos.</h1>
+      <p>Uma ferramenta simples para coletar dados do sensor, treinar um modelo de Machine Learning e gerar o código para seu robô. Sem complicações.</p>      
+      <a href="https://zenodo.org/records/16910725/files/AutoCore_Developer-v1.0.0.exe?download=1" target="_blank" class="btn-cta">
+        Baixar o AutoCore Developer
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+        </svg>
+      </a>
+    </div>
+  </main>
+
+  <section id="aiot" class="section section-aiot">
+    <div class="container aiot-layout">
+      <div class="aiot-text">
+        <h2 class="text-left">De Dados Brutos a um <span class="gradient-text">Robô Funcional</span></h2>
+        <p>Nossa aplicação guia você em um processo simples de 3 etapas: <strong>1. Conecte</strong> seu robô e colete leituras do sensor em diferentes posições. <strong>2. Treine</strong> um modelo de Machine Learning com os dados. <strong>3. Gere</strong> o código C++ pronto para ser enviado ao seu Arduino ou ESP32.</p>
+        <a href="https://zenodo.org/records/16910725/files/AutoCore_Developer-v1.0.0.exe?download=1" target="_blank" class="btn-secondary">Baixar e Começar a Usar</a>
+      </div>
+      <div class="aiot-visual">
+        <img src="https://raw.githubusercontent.com/AutoCore-Robotica/AUTOCORE_DEVELOPER/refs/heads/main/img/interface.png" alt="Interface Gráfica do AutoCore Developer" class="app-screenshot">
+      </div>
+    </div>
+  </section>
+
+  <section id="features" class="section">
+    <div class="container">
+      <h2>Machine Learning na Prática</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="card-icon icon-1">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4" />
+            </svg>
+          </div>
+          <h3>Geração de Código Automática</h3>
+          <p>Chega de `if/else` manuais. O AutoCore Developer escreve o código de decisão para você com base no modelo treinado.</p>
+        </div>
+        <div class="feature-card">
+          <div class="card-icon icon-2">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M9 12h6" />
+              <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v6" />
+            </svg>
+          </div>
+          <h3>Calibração Precisa</h3>
+          <p>Use dados reais do seu sensor para criar um modelo que entende as nuances da sua pista e do seu hardware.</p>
+        </div>
+        <div class="feature-card">
+          <div class="card-icon icon-3">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+               <path stroke-linecap="round" stroke-linejoin="round" d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
+            </svg>
+          </div>
+          <h3>Interface Intuitiva</h3>
+          <p>Visualize os dados do sensor em tempo real e siga um passo a passo guiado para calibrar seu robô sem dificuldades.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <p>&copy; 2025 AutoCore Robótica. Todos os direitos reservados.</p>
+    </div>
+  </footer>
+
+  <script>
+    // TENTATIVA ROBUSTA DE FORÇAR O SCROLL PARA O TOPO
+    window.scrollTo(0, 0); 
+    document.addEventListener('DOMContentLoaded', () => window.scrollTo(0, 0));
+    window.addEventListener('load', () => window.scrollTo(0, 0));
+    setTimeout(() => window.scrollTo(0, 0), 100); 
+
+    // Navbar scroll effect
+    const navbar = document.querySelector('.navbar');
+    window.addEventListener('scroll', () => {
+      if (window.scrollY > 50) navbar.classList.add('scrolled');
+      else navbar.classList.remove('scrolled');
+    });
+
+    // Neural Network Background Animation
+    const canvas = document.getElementById('neural-bg');
+    const ctx = canvas.getContext('2d');
+    let width, height, particles;
+
+    function resize() {
+      width = canvas.width = window.innerWidth;
+      height = canvas.height = window.innerHeight;
+      initParticles();
+    }
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * width;
+        this.y = Math.random() * height;
+        this.vx = (Math.random() - 0.5) * 0.6;
+        this.vy = (Math.random() - 0.5) * 0.6;
+        this.radius = 2;
+      }
+      update() {
+        this.x += this.vx;
+        this.y += this.vy;
+        if (this.x < 0 || this.x > width || this.y < 0 || this.y > height) this.reset();
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#00e5ff";
+        ctx.fill();
+      }
+    }
+
+    function initParticles() {
+      particles = [];
+      for (let i = 0; i < 120; i++) particles.push(new Particle());
+    }
+
+    function connect() {
+      for (let i = 0; i < particles.length; i++) {
+        for (let j = i + 1; j < particles.length; j++) {
+          const dx = particles[i].x - particles[j].x;
+          const dy = particles[i].y - particles[j].y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          if (dist < 120) {
+            ctx.beginPath();
+            ctx.strokeStyle = "rgba(0,229,255," + (1 - dist / 120) + ")";
+            ctx.lineWidth = 1;
+            ctx.moveTo(particles[i].x, particles[i].y);
+            ctx.lineTo(particles[j].x, particles[j].y);
+            ctx.stroke();
+          }
+        }
+      }
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, width, height);
+      particles.forEach(p => { p.update(); p.draw(); });
+      connect();
+      requestAnimationFrame(animate);
+    }
+
+    window.addEventListener('resize', resize);
+    resize();
+    animate();
+  </script>
+</body>
+</html>
